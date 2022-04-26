@@ -33,14 +33,14 @@
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label>{{trans('file.Destinataire')}} *</label>
-                                            <input type="text" name="customer_name" id="customer_name" class="form-control" placeholder="{{ trans('file.Customer Name...') }}" required/>
+                                            <input type="text" name="customer_name" id="customer_name" class="form-control" placeholder="{{ trans('file.Customer Name') }}..." required/>
                                             <?php $deposit = []; ?>                                            
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label>{{trans('file.Telephone')}} *</label>
-                                            <input type="tel" pattern="0[0-9]{9}" class="form-control" name="customer_tel" id="customer_tel" placeholder="{{ trans('file.Customer telephone...') }}" required>
+                                            <label>{{trans('file.Telephone')}} * (ex: 0612345678)</label>
+                                            <input type="tel" pattern="0[0-9]{9}" class="form-control" name="customer_tel" id="customer_tel" placeholder="{{ trans('file.Customer telephone') }}..." required>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -79,10 +79,10 @@
                                                         <th>{{trans('file.name')}}</th>
                                                         <th>{{trans('file.Code')}}</th>
                                                         <th>{{trans('file.Quantity')}}</th>
-                                                        <th>{{trans('file.Batch No')}}</th>
-                                                        <th>{{trans('file.Net Unit Price')}}</th>
-                                                        <th>{{trans('file.Discount')}}</th>
-                                                        <th>{{trans('file.Tax')}}</th>
+                                                        <th>{{trans('file.Original Price')}}</th>
+                                                        <th>{{trans('file.Sale Price')}}</th>
+                                                        {{-- <th>{{trans('file.Discount')}}</th>
+                                                        <th>{{trans('file.Tax')}}</th> --}}
                                                         <th>{{trans('file.Subtotal')}}</th>
                                                         <th><i class="dripicons-trash"></i></th>
                                                     </tr>
@@ -92,10 +92,10 @@
                                                 <tfoot class="tfoot active">
                                                     <th colspan="2">{{trans('file.Total')}}</th>
                                                     <th id="total-qty">0</th>
-                                                    <th style="text-align: right;">{{trans('file.Delivery Rate')}}</th>
-                                                    <th id="taux-livraison">{{ number_format($lims_general_setting_data->livraison, 2, '.', ' ') }}</th>
-                                                    <th id="total-discount">0.00</th>
-                                                    <th id="total-tax">0.00</th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    {{-- <th id="total-discount">0.00</th>
+                                                    <th id="total-tax">0.00</th> --}}
                                                     <th id="total">0.00</th>
                                                     <th></th>
                                                 </tfoot>
@@ -272,7 +272,7 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid">
+    <div class="container-fluid d-none">
         <table class="table table-bordered table-condensed totals">
             <td><strong>{{trans('file.Items')}}</strong>
                 <span class="pull-right" id="item">0.00</span>
@@ -459,6 +459,7 @@ $('select[name="customer_city"]').on('change', function() {
         url: 'getproduct/' + id,
         type: "GET",
         success:function(data) {
+            console.log(data);
             lims_product_array = [];
             product_code = data[0];
             product_name = data[1];
@@ -514,8 +515,8 @@ var lims_productcodeSearch = $('#lims_productcodeSearch');
 lims_productcodeSearch.autocomplete({
     source: function(request, response) {
         var matcher = new RegExp(".?" + $.ui.autocomplete.escapeRegex(request.term), "i");
-        alert("matcher : " + matcher);
-        console.log(lims_product_array);
+        //alert("matcher : " + matcher);
+        //console.log(lims_product_array);
         response($.grep(lims_product_array, function(item) {
             return matcher.test(item);
         }));
@@ -523,14 +524,14 @@ lims_productcodeSearch.autocomplete({
     response: function(event, ui) {
         if (ui.content.length == 1) {
             var data = ui.content[0].value;
-            alert("response : " + data);
+            //alert("response : " + data);
             $(this).autocomplete( "close" );
             productSearch(data);
         };
     },
     select: function(event, ui) {
         var data = ui.item.value;
-        alert("select : " + data);
+        //alert("select : " + data);
         productSearch(data);
     }
 });
@@ -658,7 +659,7 @@ function isCashRegisterAvailable(warehouse_id) {
 }
 
 function productSearch(data) {
-    alert(data);
+    //alert("entrance : " + data);
     $.ajax({
         type: 'GET',
         url: 'lims_product_search',
@@ -667,7 +668,8 @@ function productSearch(data) {
         },
         success: function(data) {
             var flag = 1;
-            alert(data);
+            //alert("success : " + data);
+            console.log(data);
             $(".product-code").each(function(i) {
                 if ($(this).val() == data[1]) {
                     rowindex = i;
@@ -686,16 +688,16 @@ function productSearch(data) {
                 cols += '<td>' + data[0] + '<button type="button" class="edit-product btn btn-link" data-toggle="modal" data-target="#editModal"> <i class="dripicons-document-edit"></i></button></td>';
                 cols += '<td>' + data[1] + '</td>';
                 cols += '<td><input type="number" class="form-control qty" name="qty[]" value="1" step="any" required/></td>';
-                if(data[12]) {
+                cols += '<td>' + data[2].toFixed(2) + '</td>';
+                /*if(data[12]) {
                     cols += '<td><input type="text" class="form-control batch-no" value="'+batch_no[pos]+'" required/> <input type="hidden" class="product-batch-id" name="product_batch_id[]" value="'+product_batch_id[pos]+'"/> </td>';
                 }
                 else {
                     cols += '<td><input type="text" class="form-control batch-no" disabled/> <input type="hidden" class="product-batch-id" name="product_batch_id[]"/> </td>';
-                }
-                
+                }*/
                 cols += '<td class="net_unit_price"></td>';
-                cols += '<td class="discount">0.00</td>';
-                cols += '<td class="tax"></td>';
+                /*cols += '<td class="discount">0.00</td>';
+                cols += '<td class="tax"></td>';*/
                 cols += '<td class="sub-total"></td>';
                 cols += '<td><button type="button" class="ibtnDel btn btn-md btn-danger">{{trans("file.delete")}}</button></td>';
                 cols += '<input type="hidden" class="product-code" name="product_code[]" value="' + data[1] + '"/>';
@@ -712,12 +714,7 @@ function productSearch(data) {
                 $("table.order-list tbody").prepend(newRow);
                 rowindex = newRow.index();
                 
-                if(!data[11] && product_warehouse_price[pos]) {
-                    product_price.splice(rowindex, 0, parseFloat(product_warehouse_price[pos] * currency['exchange_rate']) + parseFloat(product_warehouse_price[pos] * currency['exchange_rate'] * customer_group_rate));
-                }
-                else {
-                    product_price.splice(rowindex, 0, parseFloat(data[2] * currency['exchange_rate']) + parseFloat(data[2] * currency['exchange_rate'] * customer_group_rate));
-                }
+                product_price.splice(rowindex, 0, parseFloat(data[2] * currency['exchange_rate']));
                 product_discount.splice(rowindex, 0, '0.00');
                 tax_rate.splice(rowindex, 0, parseFloat(data[3]));
                 tax_name.splice(rowindex, 0, data[4]);
@@ -922,7 +919,7 @@ function calculateGrandTotal() {
 
     var total_qty = parseFloat($('#total-qty').text());
     var subtotal = parseFloat($('#total').text());
-    var order_tax = parseFloat($('select[name="order_tax_rate"]').val());
+    var order_tax = 0;//parseFloat($('select[name="order_tax_rate"]').val());
     var order_discount = parseFloat($('input[name="order_discount"]').val());
     var shipping_cost = parseFloat($('input[name="shipping_cost"]').val());
 

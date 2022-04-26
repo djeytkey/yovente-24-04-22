@@ -564,7 +564,7 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
-        dd($request);
+        //dd($request);
         $data = $request->all();
         if(isset($request->reference_no)) {
             $this->validate($request, [
@@ -575,16 +575,16 @@ class SaleController extends Controller
         }
         
         $data['user_id'] = Auth::id();
-        if (Auth::id() > 2) $data['payment_status'] = 2;
+        $data['payment_status'] = 2;
         if (!isset($data['is_valide'])) $data['is_valide'] = 0;
-        $cash_register_data = CashRegister::where([
+        /*$cash_register_data = CashRegister::where([
             ['user_id', $data['user_id']],
             ['warehouse_id', $data['warehouse_id']],
             ['status', true]
         ])->first();
 
         if($cash_register_data)
-            $data['cash_register_id'] = $cash_register_data->id;
+            $data['cash_register_id'] = $cash_register_data->id;*/
 
         if($data['pos']) {
             if(!isset($data['reference_no']))
@@ -635,23 +635,24 @@ class SaleController extends Controller
         }
 
         $lims_sale_data = Sale::create($data);
-        $lims_customer_data = Customer::find($data['customer_id']);
-        //collecting male data
-        $mail_data['email'] = $lims_customer_data->email;
-        $mail_data['reference_no'] = $lims_sale_data->reference_no;
-        $mail_data['sale_status'] = $lims_sale_data->sale_status;
-        $mail_data['payment_status'] = $lims_sale_data->payment_status;
-        $mail_data['total_qty'] = $lims_sale_data->total_qty;
-        $mail_data['total_price'] = $lims_sale_data->total_price;
-        $mail_data['order_tax'] = $lims_sale_data->order_tax;
-        $mail_data['order_tax_rate'] = $lims_sale_data->order_tax_rate;
-        $mail_data['order_discount'] = $lims_sale_data->order_discount;
-        $mail_data['shipping_cost'] = $lims_sale_data->shipping_cost;
-        $mail_data['grand_total'] = $lims_sale_data->grand_total;
-        $mail_data['paid_amount'] = $lims_sale_data->paid_amount;
+        // $lims_customer_data = Customer::find($data['customer_id']);
+        // //collecting male data
+        // $mail_data['email'] = $lims_customer_data->email;
+        // $mail_data['reference_no'] = $lims_sale_data->reference_no;
+        // $mail_data['sale_status'] = $lims_sale_data->sale_status;
+        // $mail_data['payment_status'] = $lims_sale_data->payment_status;
+        // $mail_data['total_qty'] = $lims_sale_data->total_qty;
+        // $mail_data['total_price'] = $lims_sale_data->total_price;
+        // $mail_data['order_tax'] = $lims_sale_data->order_tax;
+        // $mail_data['order_tax_rate'] = $lims_sale_data->order_tax_rate;
+        // $mail_data['order_discount'] = $lims_sale_data->order_discount;
+        // $mail_data['shipping_cost'] = $lims_sale_data->shipping_cost;
+        // $mail_data['grand_total'] = $lims_sale_data->grand_total;
+        // $mail_data['paid_amount'] = $lims_sale_data->paid_amount;
 
         $product_id = $data['product_id'];
-        $product_batch_id = $data['product_batch_id'];
+        $product_batch_id = "";
+        //$product_batch_id = $data['product_batch_id'];
         $product_code = $data['product_code'];
         $qty = $data['qty'];
         $sale_unit = $data['sale_unit'];
@@ -1376,30 +1377,30 @@ class SaleController extends Controller
             $product_variant_id = $lims_product_data->product_variant_id;
         }
 
-        $product[] = $lims_product_data->name;
+        $product[] = $lims_product_data->name; 
         if($lims_product_data->is_variant){
-            $product[] = $lims_product_data->item_code;
+            $product[] = $lims_product_data->item_code; 
             $lims_product_data->price += $lims_product_data->additional_price;
         }
         else
-            $product[] = $lims_product_data->code;
+            $product[] = $lims_product_data->code; 
 
         if($lims_product_data->promotion && $todayDate <= $lims_product_data->last_date){
-            $product[] = $lims_product_data->promotion_price;
+            $product[] = $lims_product_data->promotion_price; 
         }
         else
-            $product[] = $lims_product_data->price;
+            $product[] = $lims_product_data->price; 
         
         if($lims_product_data->tax_id) {
             $lims_tax_data = Tax::find($lims_product_data->tax_id);
-            $product[] = $lims_tax_data->rate;
-            $product[] = $lims_tax_data->name;
+            $product[] = $lims_tax_data->rate; 
+            $product[] = $lims_tax_data->name; 
         }
         else{
-            $product[] = 0;
-            $product[] = 'No Tax';
+            $product[] = 0; 
+            $product[] = 'No Tax'; 
         }
-        $product[] = $lims_product_data->tax_method;
+        $product[] = $lims_product_data->tax_method; 
         if($lims_product_data->type == 'standard'){
             $units = Unit::where("base_unit", $lims_product_data->unit_id)
                     ->orWhere('id', $lims_product_data->unit_id)
@@ -1419,19 +1420,19 @@ class SaleController extends Controller
                     $unit_operation_value[] = $unit->operation_value;
                 }
             }
-            $product[] = implode(",",$unit_name) . ',';
-            $product[] = implode(",",$unit_operator) . ',';
-            $product[] = implode(",",$unit_operation_value) . ',';     
+            $product[] = implode(",",$unit_name) . ','; 
+            $product[] = implode(",",$unit_operator) . ','; 
+            $product[] = implode(",",$unit_operation_value) . ','; 
         }
         else{
-            $product[] = 'n/a'. ',';
-            $product[] = 'n/a'. ',';
-            $product[] = 'n/a'. ',';
+            $product[] = 'n/a'. ','; 
+            $product[] = 'n/a'. ','; 
+            $product[] = 'n/a'. ','; 
         }
-        $product[] = $lims_product_data->id;
-        $product[] = $product_variant_id;
-        $product[] = $lims_product_data->promotion;
-        $product[] = $lims_product_data->is_batch;
+        $product[] = $lims_product_data->id; 
+        $product[] = $product_variant_id; 
+        $product[] = $lims_product_data->promotion; 
+        $product[] = $lims_product_data->is_batch; 
         return $product;
 
     }

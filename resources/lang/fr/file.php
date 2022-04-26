@@ -614,5 +614,12 @@ return [
 	"Total Orders" => "Total Commandes",
 	"Delivered / Invoiced" => "Livré / Facturé",
 	"In progress" => "En Cours",
+	"Original Price" => "Prix Original",
+	"Sale Price" => "Prix de Vente",
+	"Destinataire" => "Destinataire",
+	"Telephone" => "Téléphone",
+	"Customer Name" => "Nom du destinataire",
+	"Customer telephone" => "Téléphone du destinataire",
+	"Select City" => "Sélectionnez une ville",
 ];
 ?>

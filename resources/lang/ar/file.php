@@ -41,7 +41,7 @@ return [
 	"qty" => "الكمية",
 	"price" => "السعر",
 	"Image" => "صورة",
-	"Code" => "الشفرة",
+	"Code" => "الرمز",
 	"Brand" => "علامة تجارية",
 	"Quantity" => "كمية",
 	"Unit" => "وحدة",
@@ -614,5 +614,12 @@ return [
 	"Total Orders" => "جميع الطلبات",
 	"Delivered / Invoiced" => "مُستلم / مُفوتر",
 	"In progress" => "قيد التنفيذ",
+	"Original Price" => "السعر الأصلي",
+	"Sale Price" => "سعر البيع",
+	"Destinataire" => "المرسل إليه",
+	"Telephone" => "رقم الهاتف",
+	"Customer Name" => "اسم المرسل إليه",
+	"Customer telephone" => "رقم هاتف المرسل إليه",
+	"Select City" => "اختر مدينة",
 ];
 ?>

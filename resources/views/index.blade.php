@@ -260,7 +260,7 @@
                             <tr>
                               <td>{{ date($general_setting->date_format, strtotime($sale->created_at->toDateString())) }}</td>
                               <td>{{$sale->reference_no}}</td>
-                              <td>{{$customer->name}}</td>
+                              <td>{{$sale->customer_name}}</td>
                               @if($sale->sale_status == 1)
                               <td><div class="badge badge-success">{{trans('file.Completed')}}</div></td>
                               @elseif($sale->sale_status == 2)
