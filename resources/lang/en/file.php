@@ -627,5 +627,6 @@ return [
 	"Customer Name" => "Recipient name",
 	"Customer telephone" => "Recipient phone number",
 	"Select City" => "Select city",
+	"Products" => "Products",
 ];
 ?>

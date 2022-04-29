@@ -733,13 +733,13 @@ nav.navbar .nav-item li.notifications a i{
 .dt-buttons {
 	float: left;
 	vertical-align: middle;
-	width: 30%;
+	width: 50%;
 } 
 
 .dt-buttons {
 	display: inline-block;
 	text-align: right;
-	width: 40%;
+	width: 50%;
 }
 
 .dt-buttons button {

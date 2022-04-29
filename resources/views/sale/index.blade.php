@@ -26,7 +26,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mt-3 d-none">
+                {{-- <div class="col-md-3 mt-3 d-none">
                     <div class="form-group row">
                         <label class="d-tc mt-2"><strong>{{trans('file.Choose Warehouse')}}</strong> &nbsp;</label>
                         <div class="d-tc">
@@ -42,7 +42,7 @@
                             </select>
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <div class="col-md-3 mt-3">
                     <div class="form-group row">
                         <label class="d-tc mt-2"><strong>{{trans('file.Choose Status')}}</strong> &nbsp;</label>
@@ -75,14 +75,13 @@
                     <th class="not-exported"></th>
                     <th>{{trans('file.Date')}}</th>
                     <th>{{trans('file.reference')}}</th>
-                    <th>{{trans('file.Biller')}}</th>
-                    <th>{{trans('file.customer')}}</th>
-                    <th>{{trans('file.Created By')}}</th>
-                    <th>{{trans('file.Payment Status')}}</th>
+                    <th>{{trans('file.Customer Name')}}</th>
+                    <th>{{trans('file.Customer telephone')}}</th>
+                    <th>{{trans('file.Products')}}</th>
                     <th>{{trans('file.Sale Status')}}</th>
+                    <th>{{trans('file.City')}}</th>
                     <th>{{trans('file.grand total')}}</th>
-                    <th>{{trans('file.Paid')}}</th>
-                    <th>{{trans('file.Due')}}</th>
+                    <th>{{trans('file.Delivery')}}</th>
                     <th class="not-exported">{{trans('file.action')}}</th>
                 </tr>
             </thead>
@@ -100,20 +99,18 @@
                     <th></th>
                     <th></th>
                     <th></th>
-                    <th></th>
                 </tr>
                 <tr>
                     <th></th>
                     <th></th>
                     <th></th>
-                    <th class="noVis"></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
                     <th>{{trans('file.grand total')}}</th>
-                    <th>{{trans('file.Paid')}}</th>
-                    <th>{{trans('file.Due')}}</th>
+                    <th></th>
                     <th></th>
                 </tr>
                 {{-- <tr>
@@ -769,42 +766,57 @@
 
     var starting_date = $("input[name=starting_date]").val(); 
     var ending_date = $("input[name=ending_date]").val();
-    var warehouse_id = $("#warehouse_id").val();
+    //var warehouse_id = $("#warehouse_id").val();
     var status_id = $("#status_id").val();
 
     $('#sale-table').DataTable( {
         "processing": true,
         "serverSide": true,
+        "searching": false,
         "ajax":{
             url:"sales/sale-data",
             data:{
                 all_permission: all_permission,
                 starting_date: starting_date,
                 ending_date: ending_date,
-                warehouse_id: warehouse_id,
+                //warehouse_id: warehouse_id,
                 status_id: status_id
             },
             dataType: "json",
             type:"post"
         },
         "createdRow": function( row, data, dataIndex ) {
-            $(row).addClass('sale-link');
-            $(row).attr('data-sale', data['sale']);
+            //console.log(data['sale']);
+            // $(row).addClass('sale-link');
+            // $(row).attr('data-sale', data['sale']);
         },
         "columns": [
             {"data": "key"},
             {"data": "date"},
             {"data": "reference_no"},
-            {"data": "valide_status_search"},
-            {"data": "customer"},
-            {"data": "username"},
-            {"data": "payment_status"},
+            {"data": "customer_name"},
+            {"data": "customer_tel"},
+            {"data": "products"},
             {"data": "valide_status"},
+            {"data": "customer_city"},
             {"data": "grand_total"},
-            {"data": "paid_amount"},
-            {"data": "due"},
+            {"data": "delivery_status"},
             {"data": "options"},
         ],
+        // "columns": [
+        //     {"data": "key"},
+        //     {"data": "date"},
+        //     {"data": "reference_no"},
+        //     {"data": "valide_status_search"},
+        //     {"data": "customer"},
+        //     {"data": "username"},
+        //     {"data": "payment_status"},
+        //     {"data": "valide_status"},
+        //     {"data": "grand_total"},
+        //     {"data": "paid_amount"},
+        //     {"data": "due"},
+        //     {"data": "options"},
+        // ],
         'language': {            
             'lengthMenu': '_MENU_ {{trans("file.records per page")}}',
              "info":      '<small>{{trans("file.Showing")}} _START_ - _END_ (_TOTAL_)</small>',
@@ -816,14 +828,14 @@
         },
         order:[['1', 'desc']],
         'columnDefs': [
-            {
+            /*{
                 "orderable": false,
                 'targets': [0, 4, 5, 6, 7, 8, 9, 10, 11],
             },
             {
                 'targets': 3,
                 className: 'noVis'
-            },
+            },*/
             {
                 'render': function(data, type, row, meta){
                     if(type === 'display'){

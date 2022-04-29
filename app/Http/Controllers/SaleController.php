@@ -78,7 +78,7 @@ class SaleController extends Controller
             }
             else {
                 //$starting_date = date("Y-m-d", strtotime(date('Y-m-d', strtotime('-1 year', strtotime(date('Y-m-d') )))));
-                $starting_date = "2022-01-01";
+                $starting_date = date("Y") . "-01-01";
                 $ending_date = date("Y-m-d");
             }
 
@@ -98,8 +98,8 @@ class SaleController extends Controller
         $columns = array( 
             1 => 'created_at', 
             2 => 'reference_no',
-            7 => 'grand_total',
-            8 => 'paid_amount',
+            8 => 'grand_total',
+            //8 => 'paid_amount',
         );
 
         if($request->input('status_id') != 2)
@@ -121,9 +121,14 @@ class SaleController extends Controller
                         ->whereDate('created_at', '<=' ,$request->input('ending_date'))
                         ->count();
         elseif($status_id != 2)
-            $totalData = Sale::where('is_valide', $status_id)->whereDate('created_at', '>=' ,$request->input('starting_date'))->whereDate('created_at', '<=' ,$request->input('ending_date'))->count();
+            $totalData = Sale::where('is_valide', $status_id)
+                        ->whereDate('created_at', '>=' ,$request->input('starting_date'))
+                        ->whereDate('created_at', '<=' ,$request->input('ending_date'))
+                        ->count();
         else
-            $totalData = Sale::whereDate('created_at', '>=' ,$request->input('starting_date'))->whereDate('created_at', '<=' ,$request->input('ending_date'))->count();
+            $totalData = Sale::whereDate('created_at', '>=' ,$request->input('starting_date'))
+                        ->whereDate('created_at', '<=' ,$request->input('ending_date'))
+                        ->count();
 
         $totalFiltered = $totalData;
         if($request->input('length') != -1)
@@ -135,7 +140,7 @@ class SaleController extends Controller
         $dir = $request->input('order.0.dir');
         if(empty($request->input('search.value'))) {
             if(Auth::user()->role_id > 2 && config('staff_access') == 'own' && $status_id != 2)
-                $sales = Sale::with('biller', 'customer', 'warehouse', 'user')
+                $sales = Sale::with('user')
                         ->where([
                             ['user_id', Auth::id()],
                             ['is_valide', $status_id]
@@ -147,7 +152,7 @@ class SaleController extends Controller
                         ->orderBy($order, $dir)
                         ->get();
             elseif(Auth::user()->role_id > 2 && config('staff_access') == 'own')
-                $sales = Sale::with('biller', 'customer', 'warehouse', 'user')
+                $sales = Sale::with('user')
                         ->where('user_id', Auth::id())
                         ->whereDate('created_at', '>=' ,$request->input('starting_date'))
                         ->whereDate('created_at', '<=' ,$request->input('ending_date'))
@@ -156,7 +161,7 @@ class SaleController extends Controller
                         ->orderBy($order, $dir)
                         ->get();
             elseif($status_id != 2)
-                $sales = Sale::with('biller', 'customer', 'warehouse', 'user')
+                $sales = Sale::with('user')
                         ->where('is_valide', $status_id)
                         ->whereDate('created_at', '>=' ,$request->input('starting_date'))
                         ->whereDate('created_at', '<=' ,$request->input('ending_date'))
@@ -165,7 +170,7 @@ class SaleController extends Controller
                         ->orderBy($order, $dir)
                         ->get();
             else
-                $sales = Sale::with('biller', 'customer', 'warehouse', 'user')
+                $sales = Sale::with('user')
                         ->whereDate('created_at', '>=' ,$request->input('starting_date'))
                         ->whereDate('created_at', '<=' ,$request->input('ending_date'))
                         ->offset($start)
@@ -178,9 +183,6 @@ class SaleController extends Controller
             $search = $request->input('search.value');
             if(Auth::user()->role_id > 2 && config('staff_access') == 'own' && $status_id != 2) {
                 $sales =  Sale::select('sales.*')
-                            ->with('biller', 'customer', 'warehouse', 'user')
-                            ->join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where([
                                 ['sales.user_id', Auth::id()],
@@ -192,12 +194,7 @@ class SaleController extends Controller
                                 ['sales.is_valide', $status_id]
                             ])
                             ->orwhere([
-                                ['customers.name', 'LIKE', "%{$search}%"],
-                                ['sales.user_id', Auth::id()],
-                                ['sales.is_valide', $status_id]
-                            ])
-                            ->orwhere([
-                                ['billers.name', 'LIKE', "%{$search}%"],
+                                ['sales.customer_name', 'LIKE', "%{$search}%"],
                                 ['sales.user_id', Auth::id()],
                                 ['sales.is_valide', $status_id]
                             ])
@@ -205,9 +202,7 @@ class SaleController extends Controller
                             ->limit($limit)
                             ->orderBy($order,$dir)->get();
 
-                $totalFiltered = Sale::
-                            join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
+                $totalFiltered = Sale::select('sales.*')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where([
                                 ['sales.user_id', Auth::id()],
@@ -219,12 +214,7 @@ class SaleController extends Controller
                                 ['sales.is_valide', $status_id]
                             ])
                             ->orwhere([
-                                ['customers.name', 'LIKE', "%{$search}%"],
-                                ['sales.user_id', Auth::id()],
-                                ['sales.is_valide', $status_id]
-                            ])
-                            ->orwhere([
-                                ['billers.name', 'LIKE', "%{$search}%"],
+                                ['sales.customer_name', 'LIKE', "%{$search}%"],
                                 ['sales.user_id', Auth::id()],
                                 ['sales.is_valide', $status_id]
                             ])
@@ -232,9 +222,6 @@ class SaleController extends Controller
             }
             elseif($status_id != 2) {
                 $sales =  Sale::select('sales.*')
-                            ->with('biller', 'customer', 'warehouse', 'user')
-                            ->join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where([
                                 ['sales.user_id', Auth::id()],
@@ -245,20 +232,14 @@ class SaleController extends Controller
                                 ['sales.is_valide', $status_id]
                             ])
                             ->orwhere([
-                                ['customers.name', 'LIKE', "%{$search}%"],
-                                ['sales.is_valide', $status_id]
-                            ])
-                            ->orwhere([
-                                ['billers.name', 'LIKE', "%{$search}%"],
+                                ['sales.customer_name', 'LIKE', "%{$search}%"],
                                 ['sales.is_valide', $status_id]
                             ])
                             ->offset($start)
                             ->limit($limit)
                             ->orderBy($order,$dir)->get();
 
-                $totalFiltered = Sale::
-                            join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
+                $totalFiltered = Sale::select('sales.*')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where([
                                 ['sales.user_id', Auth::id()],
@@ -269,37 +250,26 @@ class SaleController extends Controller
                                 ['sales.is_valide', $status_id]
                             ])
                             ->orwhere([
-                                ['customers.name', 'LIKE', "%{$search}%"],
-                                ['sales.is_valide', $status_id]
-                            ])
-                            ->orwhere([
-                                ['billers.name', 'LIKE', "%{$search}%"],
+                                ['sales.customer_name', 'LIKE', "%{$search}%"],
                                 ['sales.is_valide', $status_id]
                             ])
                             ->count();
             }
             else {
                 $sales =  Sale::select('sales.*')
-                            ->with('biller', 'customer', 'warehouse', 'user')
-                            ->join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where('sales.user_id', Auth::id())
                             ->orwhere('sales.reference_no', 'LIKE', "%{$search}%")
-                            ->orwhere('customers.name', 'LIKE', "%{$search}%")
-                            ->orwhere('billers.name', 'LIKE', "%{$search}%")
+                            ->orwhere('sales.customer_name', 'LIKE', "%{$search}%")
                             ->offset($start)
                             ->limit($limit)
                             ->orderBy($order,$dir)->get();
 
-                $totalFiltered = Sale::
-                            join('customers', 'sales.customer_id', '=', 'customers.id')
-                            ->join('billers', 'sales.biller_id', '=', 'billers.id')
+                $totalFiltered = Sale::select('sales.*')
                             ->whereDate('sales.created_at', '=' , date('Y-m-d', strtotime(str_replace('/', '-', $search))))
                             ->where('sales.user_id', Auth::id())
                             ->orwhere('sales.reference_no', 'LIKE', "%{$search}%")
-                            ->orwhere('customers.name', 'LIKE', "%{$search}%")
-                            ->orwhere('billers.name', 'LIKE', "%{$search}%")
+                            ->orwhere('sales.customer_name', 'LIKE', "%{$search}%")
                             ->count();
             }
             // if(Auth::user()->role_id > 2 && config('staff_access') == 'own' && $status_id != 2) {
@@ -377,11 +347,14 @@ class SaleController extends Controller
                 $nestedData['id'] = $sale->id;
                 $nestedData['key'] = $key;
                 $nestedData['sold_by'] = $sale->user_id;
+                $nestedData['username'] = User::find($nestedData['sold_by'])->name;
                 $nestedData['date'] = date(config('date_format'), strtotime($sale->created_at->toDateString()));
                 $nestedData['reference_no'] = $sale->reference_no;
-                $nestedData['biller'] = $sale->biller->name;
-                $nestedData['customer'] = $sale->customer->name;
-                $nestedData['username'] = User::find($nestedData['sold_by'])->name;
+                $nestedData['customer_name'] = $sale->customer_name;
+                $nestedData['customer_tel'] = $sale->customer_tel;
+                $nestedData['customer_address'] = $sale->customer_address;                
+                $nestedData['city'] = $sale->customer_city;
+                $nestedData['customer_city'] = City::find($nestedData['city'])->city;
 
                 if($sale->sale_status == 1){
                     $nestedData['sale_status'] = '<div class="badge badge-success">'.trans('file.Completed').'</div>';
@@ -424,7 +397,7 @@ class SaleController extends Controller
                               <span class="sr-only">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu edit-options dropdown-menu-right dropdown-default" user="menu">';
-                            if(($sale->is_valide == 1 && $sale->payment_status == 4) || Auth::id() == 1) {
+                            if(($sale->is_valide == 1 && $sale->payment_status == 4) || Auth::user()->role_id == 1) {
                                 $nestedData['options'] .= '<li>
                                 <a href="'.route('sale.invoice', $sale->id).'" class="btn btn-link">
                                 <i class="fa fa-copy"></i> '.trans('file.Generate Invoice').'</a>
@@ -439,14 +412,14 @@ class SaleController extends Controller
                         $nestedData['options'] .= '<li>
                         <a href="'.route('sales.edit', $sale->id).'" class="btn btn-link"><i class="dripicons-document-edit"></i> '.trans('file.edit').'</a>
                         </li>'; 
-                    } elseif(Auth::id() == 1)
+                    } elseif(Auth::user()->role_id == 1)
                     {
                         $nestedData['options'] .= '<li>
                         <a href="'.route('sales.edit', $sale->id).'" class="btn btn-link"><i class="dripicons-document-edit"></i> '.trans('file.edit').'</a>
                         </li>';
                     }
                 }
-                if (Auth::id() == 1)
+                if (Auth::user()->role_id == 1)
                 {
                     $nestedData['options'] .= 
                     '<li>
@@ -474,39 +447,52 @@ class SaleController extends Controller
                 else
                     $coupon_code = null;
 
+                $nestedData['city'] = $sale->customer_city;
+                $customer_city = City::find($nestedData['city'])->city;
+
+                $product_list = Product_Sale::where('sale_id', $sale->id)->get();
+
+                $products = "";
+
+                foreach ($product_list as $product)
+                {
+                    $product_variant = Variant::where('id', $product->variant_id)->first();
+                    $product_name = Product::where('id', $product->$product_id)->first();
+                    $product_qty = $product->qty;
+                    $products = $products . '<br>($nbsp;' . $product_qty . '$nbsp;' . $product_variant . '$nbsp;)$nbsp;' . $product_name;
+                }
+
+                $nestedData['products'] = $products;
+                $nestedData['delivery_status'] = 'Delivered Tarik';
+
                 $nestedData['sale'] = array( '[ 
                     "'.date(config('date_format'), strtotime($sale->created_at->toDateString())).'"', //0
                     ' "'.$sale->reference_no.'"', //1
                     ' "'.$sale_status.'"', //2
-                    ' "'.$sale->biller->name.'"', //3
-                    ' "'.$sale->biller->company_name.'"', //4
-                    ' "'.$sale->biller->email.'"', //5
-                    ' "'.$sale->biller->phone_number.'"', //6
-                    ' "'.$sale->biller->address.'"', //7
-                    ' "'.$sale->biller->city.'"', //8
-                    ' "'.$sale->customer->name.'"', //9
-                    ' "'.$sale->customer->phone_number.'"', //10
-                    ' "'.$sale->customer->address.'"', //11
-                    ' "'.$sale->customer->city.'"', //12
-                    ' "'.$sale->id.'"', //13
-                    ' "'.$sale->total_tax.'"', //14
-                    ' "'.$sale->total_discount.'"', //15
-                    ' "'.$sale->total_price.'"', //16
-                    ' "'.$sale->order_tax.'"', //17
-                    ' "'.$sale->order_tax_rate.'"', //18
-                    ' "'.$sale->order_discount.'"', //19
-                    ' "'.$sale->shipping_cost.'"', //20
-                    ' "'.$sale->grand_total.'"', //21
-                    ' "'.$sale->paid_amount.'"', //22
-                    ' "'.preg_replace('/[\n\r]/', "<br>", $sale->sale_note).'"', //23
-                    ' "'.preg_replace('/[\n\r]/', "<br>", $sale->staff_note).'"', //24
-                    ' "'.$sale->user->name.'"', //25
-                    ' "'.$sale->user->email.'"', //26
-                    ' "'.$sale->warehouse->name.'"', //27
-                    ' "'.$coupon_code.'"', //28
-                    ' "'.$sale->coupon_discount.'"', //29
-                    ' "'.$sale->user_id.'"', //30
-                    ' "'.$sale->is_valide.'"]' //31
+                    ' "'.$sale->customer_name.'"', //3
+                    ' "'.$sale->customer_tel.'"', //4
+                    ' "'.$sale->customer_address.'"', //5
+                    ' "'.$sale->customer_city.'"', //6
+                    ' "'.customer_city.'"', //7
+                    ' "'.$sale->id.'"', //8
+                    ' "'.$sale->total_tax.'"', //9
+                    ' "'.$sale->total_discount.'"', //10
+                    ' "'.$sale->total_price.'"', //11
+                    ' "'.$sale->order_tax.'"', //12
+                    ' "'.$sale->order_tax_rate.'"', //13
+                    ' "'.$sale->order_discount.'"', //14
+                    ' "'.$sale->shipping_cost.'"', //15
+                    ' "'.$sale->grand_total.'"', //16
+                    ' "'.$sale->paid_amount.'"', //17
+                    ' "'.preg_replace('/[\n\r]/', "<br>", $sale->sale_note).'"', //18
+                    ' "'.preg_replace('/[\n\r]/', "<br>", $sale->staff_note).'"', //19
+                    ' "'.$sale->user->name.'"', //20
+                    ' "'.$sale->user->email.'"', //21
+                    ' "'.$coupon_code.'"', //22
+                    ' "'.$sale->coupon_discount.'"', //23
+                    ' "'.$sale->user_id.'"', //24
+                    ' "'.$products.'"', //25
+                    ' "'.$sale->is_valide.'"]' //26
                 );
                 $data[] = $nestedData;
             }

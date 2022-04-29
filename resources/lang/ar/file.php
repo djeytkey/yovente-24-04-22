@@ -621,5 +621,6 @@ return [
 	"Customer Name" => "اسم المرسل إليه",
 	"Customer telephone" => "رقم هاتف المرسل إليه",
 	"Select City" => "اختر مدينة",
+	"Products" => "المنتجات",
 ];
 ?>

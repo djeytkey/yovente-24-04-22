@@ -27,23 +27,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mt-3 d-none">
-                    <div class="form-group row">
-                        <label class="d-tc mt-2"><strong><?php echo e(trans('file.Choose Warehouse')); ?></strong> &nbsp;</label>
-                        <div class="d-tc">
-                            <select id="warehouse_id" name="warehouse_id" class="selectpicker form-control" data-live-search="true" >
-                                <option value="0"><?php echo e(trans('file.All Warehouse')); ?></option>
-                                <?php $__currentLoopData = $lims_warehouse_list; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warehouse): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <?php if($warehouse->id == $warehouse_id): ?>
-                                        <option selected value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
-                                    <?php else: ?>
-                                        <option value="<?php echo e($warehouse->id); ?>"><?php echo e($warehouse->name); ?></option>
-                                    <?php endif; ?>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="col-md-3 mt-3">
                     <div class="form-group row">
                         <label class="d-tc mt-2"><strong><?php echo e(trans('file.Choose Status')); ?></strong> &nbsp;</label>
@@ -77,14 +61,13 @@
                     <th class="not-exported"></th>
                     <th><?php echo e(trans('file.Date')); ?></th>
                     <th><?php echo e(trans('file.reference')); ?></th>
-                    <th><?php echo e(trans('file.Biller')); ?></th>
-                    <th><?php echo e(trans('file.customer')); ?></th>
-                    <th><?php echo e(trans('file.Created By')); ?></th>
-                    <th><?php echo e(trans('file.Payment Status')); ?></th>
+                    <th><?php echo e(trans('file.Customer Name')); ?></th>
+                    <th><?php echo e(trans('file.Customer telephone')); ?></th>
+                    <th><?php echo e(trans('file.Products')); ?></th>
                     <th><?php echo e(trans('file.Sale Status')); ?></th>
+                    <th><?php echo e(trans('file.City')); ?></th>
                     <th><?php echo e(trans('file.grand total')); ?></th>
-                    <th><?php echo e(trans('file.Paid')); ?></th>
-                    <th><?php echo e(trans('file.Due')); ?></th>
+                    <th><?php echo e(trans('file.Delivery')); ?></th>
                     <th class="not-exported"><?php echo e(trans('file.action')); ?></th>
                 </tr>
             </thead>
@@ -102,20 +85,18 @@
                     <th></th>
                     <th></th>
                     <th></th>
-                    <th></th>
                 </tr>
                 <tr>
                     <th></th>
                     <th></th>
                     <th></th>
-                    <th class="noVis"></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
                     <th><?php echo e(trans('file.grand total')); ?></th>
-                    <th><?php echo e(trans('file.Paid')); ?></th>
-                    <th><?php echo e(trans('file.Due')); ?></th>
+                    <th></th>
                     <th></th>
                 </tr>
                 
@@ -757,42 +738,57 @@
 
     var starting_date = $("input[name=starting_date]").val(); 
     var ending_date = $("input[name=ending_date]").val();
-    var warehouse_id = $("#warehouse_id").val();
+    //var warehouse_id = $("#warehouse_id").val();
     var status_id = $("#status_id").val();
 
     $('#sale-table').DataTable( {
         "processing": true,
         "serverSide": true,
+        "searching": false,
         "ajax":{
             url:"sales/sale-data",
             data:{
                 all_permission: all_permission,
                 starting_date: starting_date,
                 ending_date: ending_date,
-                warehouse_id: warehouse_id,
+                //warehouse_id: warehouse_id,
                 status_id: status_id
             },
             dataType: "json",
             type:"post"
         },
         "createdRow": function( row, data, dataIndex ) {
-            $(row).addClass('sale-link');
-            $(row).attr('data-sale', data['sale']);
+            //console.log(data['sale']);
+            // $(row).addClass('sale-link');
+            // $(row).attr('data-sale', data['sale']);
         },
         "columns": [
             {"data": "key"},
             {"data": "date"},
             {"data": "reference_no"},
-            {"data": "valide_status_search"},
-            {"data": "customer"},
-            {"data": "username"},
-            {"data": "payment_status"},
+            {"data": "customer_name"},
+            {"data": "customer_tel"},
+            {"data": "products"},
             {"data": "valide_status"},
+            {"data": "customer_city"},
             {"data": "grand_total"},
-            {"data": "paid_amount"},
-            {"data": "due"},
+            {"data": "delivery_status"},
             {"data": "options"},
         ],
+        // "columns": [
+        //     {"data": "key"},
+        //     {"data": "date"},
+        //     {"data": "reference_no"},
+        //     {"data": "valide_status_search"},
+        //     {"data": "customer"},
+        //     {"data": "username"},
+        //     {"data": "payment_status"},
+        //     {"data": "valide_status"},
+        //     {"data": "grand_total"},
+        //     {"data": "paid_amount"},
+        //     {"data": "due"},
+        //     {"data": "options"},
+        // ],
         'language': {            
             'lengthMenu': '_MENU_ <?php echo e(trans("file.records per page")); ?>',
              "info":      '<small><?php echo e(trans("file.Showing")); ?> _START_ - _END_ (_TOTAL_)</small>',
@@ -804,14 +800,14 @@
         },
         order:[['1', 'desc']],
         'columnDefs': [
-            {
+            /*{
                 "orderable": false,
                 'targets': [0, 4, 5, 6, 7, 8, 9, 10, 11],
             },
             {
                 'targets': 3,
                 className: 'noVis'
-            },
+            },*/
             {
                 'render': function(data, type, row, meta){
                     if(type === 'display'){
